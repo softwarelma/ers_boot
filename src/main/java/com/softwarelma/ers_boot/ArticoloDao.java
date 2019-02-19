@@ -15,42 +15,73 @@ public class ArticoloDao implements ArticoloDaoInterface {
 
 	public ArticoloDao() {
 		// TODO leggere/scrivere da/a disco
+		// this.counter.set();
 	}
 
 	// TODO logger
-	// TODO return wrappers
-	// TODO validations
 
-	public List<Articolo> getAll() {
-		return this.listArticolo;
+	@Override
+	public ArticoloListResponse getAll() {
+		return new ArticoloListResponse(this.listArticolo, null);
 	}
 
-	public Articolo get(Long id) {
-		return this.mapIdAndArticolo.get(id);
+	@Override
+	public ArticoloResponse get(Long id) {
+		Articolo articolo = this.mapIdAndArticolo.get(id);
+
+		if (articolo == null) {
+			return new ArticoloResponse(null, "Articolo non trovato");
+		} else {
+			return new ArticoloResponse(articolo, null);
+		}
 	}
 
-	public Articolo addNew(Articolo articolo) {
-		articolo.setId(this.counter.incrementAndGet());
+	@Override
+	public ArticoloResponse addNew(Articolo articolo) {
+		long id = this.counter.incrementAndGet();
+		if (this.mapIdAndArticolo.containsKey(id))
+			return new ArticoloResponse(null, "Articolo non inserito");
+		articolo.setId(id);
+		this.listArticolo.add(articolo);
+		this.mapIdAndArticolo.put(id, articolo);
+		return new ArticoloResponse(articolo, null);
+	}
+
+	@Override
+	public ArticoloResponse putExisting(Articolo articolo) {
+		if (!this.mapIdAndArticolo.containsKey(articolo.getId()))
+			return new ArticoloResponse(null, "Articolo non salvato");
 		this.listArticolo.add(articolo);
 		this.mapIdAndArticolo.put(articolo.getId(), articolo);
-		return articolo;
+		return new ArticoloResponse(articolo, null);
 	}
 
-	public Articolo putExisting(Articolo articolo) {
-		this.listArticolo.add(articolo);
-		this.mapIdAndArticolo.put(articolo.getId(), articolo);
-		return articolo;
+	@Override
+	public ArticoloResponse putExistingOrNew(Articolo articolo) {
+		ArticoloResponse articoloResponse;
+
+		if (this.mapIdAndArticolo.containsKey(articolo.getId())) {
+			articoloResponse = this.addNew(articolo);
+		} else {
+			articoloResponse = this.putExisting(articolo);
+		}
+
+		if (articoloResponse.getError() != null)
+			articoloResponse.setError(articoloResponse.getError() + ", esistente o nuovo");
+		return articoloResponse;
 	}
 
-	public Articolo putExistingOrNew(Articolo articolo) {
-		this.listArticolo.add(articolo);
-		this.mapIdAndArticolo.put(articolo.getId(), articolo);
-		return articolo;
-	}
-
-	public Articolo delete(Long id) {
+	@Override
+	public ArticoloResponse delete(Long id) {
+		if (!this.mapIdAndArticolo.containsKey(id))
+			return new ArticoloResponse(null, "Articolo non cancellato, non trovato");
 		Articolo articolo = this.mapIdAndArticolo.remove(id);
-		return this.listArticolo.remove(articolo) ? articolo : null;
+
+		if (this.listArticolo.remove(articolo)) {
+			return new ArticoloResponse(articolo, null);
+		} else {
+			return new ArticoloResponse(null, "Articolo non cancellato");
+		}
 	}
 
 }
