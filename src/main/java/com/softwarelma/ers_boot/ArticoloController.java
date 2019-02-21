@@ -9,6 +9,8 @@ import java.io.ObjectOutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -77,18 +79,26 @@ public class ArticoloController {
 	public ArticoloController() {
 	}
 
+	private void addHeaders(HttpServletResponse httpServletResponse) {
+		httpServletResponse.addHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT");
+		httpServletResponse.addHeader("Access-Control-Allow-Origin", "*");
+	}
+
 	@GetMapping("/rest/getAll")
-	public ArticoloListResponse getAll() {
+	public ArticoloListResponse getAll(HttpServletResponse httpServletResponse) {
+		this.addHeaders(httpServletResponse);
 		return articoloDao.getAll();
 	}
 
 	@GetMapping("/rest/get/{id}")
-	public ArticoloResponse get(@PathVariable Long id) {
+	public ArticoloResponse get(HttpServletResponse httpServletResponse, @PathVariable Long id) {
+		this.addHeaders(httpServletResponse);
 		return articoloDao.get(id);
 	}
 
 	@PostMapping("/rest/post")
-	public ArticoloResponse postNew(@RequestBody Articolo articolo) {
+	public ArticoloResponse postNew(HttpServletResponse httpServletResponse, @RequestBody Articolo articolo) {
+		this.addHeaders(httpServletResponse);
 		ArticoloResponse articoloResponse = articoloDao.addNew(articolo);
 		if (articoloResponse.getError() == null)
 			ArticoloController.save();
@@ -96,7 +106,8 @@ public class ArticoloController {
 	}
 
 	@PutMapping("/rest/put")
-	public ArticoloResponse putExisting(@RequestBody Articolo articolo) {
+	public ArticoloResponse putExisting(HttpServletResponse httpServletResponse, @RequestBody Articolo articolo) {
+		this.addHeaders(httpServletResponse);
 		ArticoloResponse articoloResponse = articoloDao.putExisting(articolo);
 		if (articoloResponse.getError() == null)
 			ArticoloController.save();
@@ -104,7 +115,8 @@ public class ArticoloController {
 	}
 
 	@PutMapping("/rest/put/upd-ins")
-	public ArticoloResponse putExistingOrNew(@RequestBody Articolo articolo) {
+	public ArticoloResponse putExistingOrNew(HttpServletResponse httpServletResponse, @RequestBody Articolo articolo) {
+		this.addHeaders(httpServletResponse);
 		ArticoloResponse articoloResponse = articoloDao.putExistingOrNew(articolo);
 		if (articoloResponse.getError() == null)
 			ArticoloController.save();
@@ -112,7 +124,8 @@ public class ArticoloController {
 	}
 
 	@DeleteMapping("/rest/del/{id}")
-	public ArticoloResponse delete(@PathVariable Long id) {
+	public ArticoloResponse delete(HttpServletResponse httpServletResponse, @PathVariable Long id) {
+		this.addHeaders(httpServletResponse);
 		ArticoloResponse articoloResponse = articoloDao.delete(id);
 		if (articoloResponse.getError() == null)
 			ArticoloController.save();
