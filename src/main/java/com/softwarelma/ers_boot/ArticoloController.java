@@ -82,6 +82,8 @@ public class ArticoloController {
 	private void addHeaders(HttpServletResponse httpServletResponse) {
 		httpServletResponse.addHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT");
 		httpServletResponse.addHeader("Access-Control-Allow-Origin", "*");
+		// httpServletResponse.addHeader("Access-Control-Request-Headers",
+		// "X-Requested-With, accept, content-type");
 	}
 
 	@GetMapping("/rest/getAll")
@@ -98,7 +100,10 @@ public class ArticoloController {
 
 	@PostMapping("/rest/post")
 	public ArticoloResponse postNew(HttpServletResponse httpServletResponse, @RequestBody Articolo articolo) {
-		this.addHeaders(httpServletResponse);
+		// this.addHeaders(httpServletResponse);
+		httpServletResponse.addHeader("Access-Control-Allow-Headers", "accept, Content-Type");
+		httpServletResponse.addHeader("Access-Control-Allow-Methods", "POST");
+		httpServletResponse.addHeader("Access-Control-Allow-Origin", "*");
 		ArticoloResponse articoloResponse = articoloDao.addNew(articolo);
 		if (articoloResponse.getError() == null)
 			ArticoloController.save();
