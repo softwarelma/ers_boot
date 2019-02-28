@@ -6,6 +6,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -17,124 +20,147 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class ArticoloController {
 
-	private static final String SOURCE_FILE = "articoli.ser";
-	private static ArticoloDao articoloDao;
-	private static final Logger logger = Logger.getLogger(ArticoloController.class.getName());
+    private static final String SOURCE_FILE = "articoli.ser";
+    private static ArticoloDao articoloDao;
+    private static final Logger logger = Logger.getLogger(ArticoloController.class.getName());
 
-	static {
-		if (!new File(SOURCE_FILE).exists()) {
-			ArticoloController.articoloDao = new ArticoloDao();
-			logger.log(Level.INFO, "new ArticoloDao()");
-			ArticoloController.save();
-		}
+    static {
+        if (!new File(SOURCE_FILE).exists()) {
+            ArticoloController.articoloDao = new ArticoloDao();
+            logger.log(Level.INFO, "new ArticoloDao()");
+            ArticoloController.save();
+        }
 
-		ObjectInputStream ois = null;
+        ObjectInputStream ois = null;
 
-		try {
-			FileInputStream fis = new FileInputStream(SOURCE_FILE);
-			ois = new ObjectInputStream(fis);
-			ArticoloDao articoloDao = (ArticoloDao) ois.readObject();
-			ArticoloController.articoloDao = articoloDao;
-			logger.log(Level.INFO, "ArticoloDao red");
-		} catch (Exception e) {
-			logger.log(Level.SEVERE, "Reading object", e);
-		} finally {
-			if (ois != null) {
-				try {
-					ois.close();
-				} catch (IOException e) {
-					logger.log(Level.SEVERE, "Reading object, closing the input stream", e);
-				}
-			}
-		}
-	}
+        try {
+            FileInputStream fis = new FileInputStream(SOURCE_FILE);
+            ois = new ObjectInputStream(fis);
+            ArticoloDao articoloDao = (ArticoloDao) ois.readObject();
+            ArticoloController.articoloDao = articoloDao;
+            logger.log(Level.INFO, "ArticoloDao red");
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Reading object", e);
+        } finally {
+            if (ois != null) {
+                try {
+                    ois.close();
+                } catch (IOException e) {
+                    logger.log(Level.SEVERE, "Reading object, closing the input stream", e);
+                }
+            }
+        }
+    }
 
-	public static void save() {
-		ObjectOutputStream oos = null;
-		FileOutputStream fout = null;
+    public static void save() {
+        ObjectOutputStream oos = null;
+        FileOutputStream fout = null;
 
-		try {
-			fout = new FileOutputStream(SOURCE_FILE, false);
-			oos = new ObjectOutputStream(fout);
-			oos.writeObject(((ArticoloDao) ArticoloController.articoloDao));
-			logger.log(Level.INFO, "ArticoloDao wrote");
-		} catch (Exception e) {
-			logger.log(Level.SEVERE, "Writing object", e);
-		} finally {
-			if (oos != null) {
-				try {
-					oos.close();
-				} catch (IOException e) {
-					logger.log(Level.SEVERE, "Writing object, closing the output stream", e);
-				}
-			}
-		}
-	}
+        try {
+            fout = new FileOutputStream(SOURCE_FILE, false);
+            oos = new ObjectOutputStream(fout);
+            oos.writeObject(((ArticoloDao) ArticoloController.articoloDao));
+            logger.log(Level.INFO, "ArticoloDao wrote");
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Writing object", e);
+        } finally {
+            if (oos != null) {
+                try {
+                    oos.close();
+                } catch (IOException e) {
+                    logger.log(Level.SEVERE, "Writing object, closing the output stream", e);
+                }
+            }
+        }
+    }
 
-	public ArticoloController() {
-	}
+    public ArticoloController() {
+    }
 
-	private void addHeaders(HttpServletResponse httpServletResponse) {
-		httpServletResponse.addHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT");
-		httpServletResponse.addHeader("Access-Control-Allow-Origin", "*");
-		httpServletResponse.addHeader("Access-Control-Request-Headers",
-				"Origin, X-Requested-With, Content-Type, Accept");
-	}
+    private void addHeaders(HttpServletResponse httpServletResponse) {
+        // httpServletResponse.addHeader("Access-Control-Allow-Methods", "GET, POST,
+        // DELETE, PUT");
+        httpServletResponse.addHeader("Access-Control-Allow-Methods", "GET");
 
-	@GetMapping("/rest/getAll")
-	public ArticoloListResponse getAll(HttpServletResponse httpServletResponse) {
-		this.addHeaders(httpServletResponse);
-		return articoloDao.getAll();
-	}
+        // httpServletResponse.addHeader("Access-Control-Allow-Origin",
+        // "http://localhost:4200 always");
+        httpServletResponse.addHeader("Access-Control-Allow-Origin", "http://localhost:4200");
 
-	@GetMapping("/rest/get/{id}")
-	public ArticoloResponse get(HttpServletResponse httpServletResponse, @PathVariable Long id) {
-		this.addHeaders(httpServletResponse);
-		return articoloDao.get(id);
-	}
+        // httpServletResponse.addHeader("Access-Control-Request-Headers",
+        // "Origin, X-Requested-With, Content-Type, Accept");
+    }
 
-	@PostMapping("/rest/post")
-	public ArticoloResponse postNew(HttpServletResponse httpServletResponse, @RequestBody Articolo articolo) {
-		this.addHeaders(httpServletResponse);
+    @GetMapping("/rest/getAll")
+    public ArticoloListResponse getAll(HttpServletResponse httpServletResponse) {
+        this.addHeaders(httpServletResponse);
+        return articoloDao.getAll();
+    }
 
-		// TODO mirror from ng
+    @GetMapping("/rest/get/{id}")
+    public ArticoloResponse get(HttpServletResponse httpServletResponse, @PathVariable Long id) {
+        this.addHeaders(httpServletResponse);
+        return articoloDao.get(id);
+    }
 
-		ArticoloResponse articoloResponse = articoloDao.addNew(articolo);
-		if (articoloResponse.getError() == null)
-			ArticoloController.save();
-		return articoloResponse;
-	}
+    @GetMapping("/rest/getNew")
+    public ArticoloResponse getArt(HttpServletResponse httpServletResponse, @RequestParam String titolo,
+            @RequestParam String immagine, @RequestParam String nomeImmagine, @RequestParam String testo,
+            @RequestParam String sottotitoli) {
+        this.addHeaders(httpServletResponse);
+        Articolo articolo = new Articolo();
+        articolo.setTitolo(titolo);
+        articolo.setImmagine(immagine);
+        articolo.setNomeImmagine(nomeImmagine);
+        List<String> arraySottotitolo = Arrays.asList(sottotitoli.split("\\#\\*\\?"));
+        articolo.setArraySottotitolo(arraySottotitolo);
+        articolo.setTesto(testo);
+        articolo.setDataPubblicazione(new Date());
+        ArticoloResponse articoloResponse = articoloDao.addNew(articolo);
+        if (articoloResponse.getError() == null)
+            ArticoloController.save();
+        return articoloResponse;
+    }
 
-	@PutMapping("/rest/put")
-	public ArticoloResponse putExisting(HttpServletResponse httpServletResponse, @RequestBody Articolo articolo) {
-		this.addHeaders(httpServletResponse);
-		ArticoloResponse articoloResponse = articoloDao.putExisting(articolo);
-		if (articoloResponse.getError() == null)
-			ArticoloController.save();
-		return articoloResponse;
-	}
+    @PostMapping(path = "/rest/post", consumes = "application/json", produces = "application/json")
+    public ArticoloResponse postNew(HttpServletResponse httpServletResponse, @RequestBody Articolo articolo) {
+        this.addHeaders(httpServletResponse);
+        ArticoloResponse articoloResponse = articoloDao.addNew(articolo);
+        if (articoloResponse.getError() == null)
+            ArticoloController.save();
+        return articoloResponse;
+    }
 
-	@PutMapping("/rest/put/upd-ins")
-	public ArticoloResponse putExistingOrNew(HttpServletResponse httpServletResponse, @RequestBody Articolo articolo) {
-		this.addHeaders(httpServletResponse);
-		ArticoloResponse articoloResponse = articoloDao.putExistingOrNew(articolo);
-		if (articoloResponse.getError() == null)
-			ArticoloController.save();
-		return articoloResponse;
-	}
+    @PutMapping("/rest/put")
+    public ArticoloResponse putExisting(HttpServletResponse httpServletResponse, @RequestBody Articolo articolo) {
+        this.addHeaders(httpServletResponse);
+        ArticoloResponse articoloResponse = articoloDao.putExisting(articolo);
+        if (articoloResponse.getError() == null)
+            ArticoloController.save();
+        return articoloResponse;
+    }
 
-	@DeleteMapping("/rest/del/{id}")
-	public ArticoloResponse delete(HttpServletResponse httpServletResponse, @PathVariable Long id) {
-		this.addHeaders(httpServletResponse);
-		ArticoloResponse articoloResponse = articoloDao.delete(id);
-		if (articoloResponse.getError() == null)
-			ArticoloController.save();
-		return articoloResponse;
-	}
+    @PutMapping("/rest/put/upd-ins")
+    public ArticoloResponse putExistingOrNew(HttpServletResponse httpServletResponse, @RequestBody Articolo articolo) {
+        this.addHeaders(httpServletResponse);
+        ArticoloResponse articoloResponse = articoloDao.putExistingOrNew(articolo);
+        if (articoloResponse.getError() == null)
+            ArticoloController.save();
+        return articoloResponse;
+    }
+
+    @DeleteMapping("/rest/del/{id}")
+    public ArticoloResponse delete(HttpServletResponse httpServletResponse, @PathVariable Long id) {
+        this.addHeaders(httpServletResponse);
+        ArticoloResponse articoloResponse = articoloDao.delete(id);
+        if (articoloResponse.getError() == null)
+            ArticoloController.save();
+        return articoloResponse;
+    }
 
 }
