@@ -24,12 +24,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * see https://spring.io/guides/gs/rest-service-cors/
+ */
 @RestController
 public class ArticoloController {
 
     private static final String SOURCE_FILE = "articoli.ser";
     private static ArticoloDao articoloDao;
     private static final Logger logger = Logger.getLogger(ArticoloController.class.getName());
+    private static final String CORS_ORIGIN = "http://localhost:4200";
 
     static {
         if (!new File(SOURCE_FILE).exists()) {
@@ -84,54 +88,20 @@ public class ArticoloController {
     public ArticoloController() {
     }
 
-    private void addHeaders(HttpServletResponse httpServletResponse) {
-        // httpServletResponse.addHeader("Access-Control-Allow-Methods", "GET, POST,
-        // DELETE, PUT");
-        httpServletResponse.addHeader("Access-Control-Allow-Methods", "*");
-
-        // httpServletResponse.addHeader("Access-Control-Allow-Origin",
-        // "http://localhost:4200 always");
-        httpServletResponse.addHeader("Access-Control-Allow-Origin", "http://localhost:4200");
-
-        // httpServletResponse.addHeader("Access-Control-Request-Headers",
-        // "Origin, X-Requested-With, Content-Type, Accept");
-        httpServletResponse.addHeader("Access-Control-Request-Headers", "*");
-    }
-
+    @CrossOrigin(origins = CORS_ORIGIN)
     @GetMapping("/rest/getAll")
     public ArticoloListResponse getAll(HttpServletResponse httpServletResponse) {
-        this.addHeaders(httpServletResponse);
         return articoloDao.getAll();
     }
 
+    @CrossOrigin(origins = CORS_ORIGIN)
     @GetMapping("/rest/get/{id}")
     public ArticoloResponse get(HttpServletResponse httpServletResponse, @PathVariable Long id) {
-        this.addHeaders(httpServletResponse);
         return articoloDao.get(id);
     }
 
-    @GetMapping("/rest/getNew")
-    public ArticoloResponse getNew(HttpServletResponse httpServletResponse, @RequestParam String titolo,
-            @RequestParam String immagine, @RequestParam String nomeImmagine, @RequestParam String testo,
-            @RequestParam String sottotitoli) {
-        this.addHeaders(httpServletResponse);
-        Articolo articolo = new Articolo();
-        articolo.setTitolo(titolo);
-        articolo.setImmagine(immagine);
-        articolo.setNomeImmagine(nomeImmagine);
-        List<String> arraySottotitolo = Arrays.asList(sottotitoli.split("\\#\\*\\?"));
-        articolo.setArraySottotitolo(arraySottotitolo);
-        articolo.setTesto(testo);
-        articolo.setDataPubblicazione(new Date());
-        ArticoloResponse articoloResponse = articoloDao.addNew(articolo);
-        if (articoloResponse.getError() == null)
-            ArticoloController.save();
-        return articoloResponse;
-    }
-
-    // TODO see https://spring.io/guides/gs/rest-service-cors/
-    @CrossOrigin(origins = "http://localhost:4200")
-    @PostMapping(path = "/rest/post", consumes = "application/json", produces = "application/json")
+    @CrossOrigin(origins = CORS_ORIGIN)
+    @PostMapping(path = "/rest/postNew", consumes = "application/json", produces = "application/json")
     public ArticoloResponse postNew(HttpServletResponse httpServletResponse, @RequestBody Articolo articolo) {
         // this.addHeaders(httpServletResponse);
         ArticoloResponse articoloResponse = articoloDao.addNew(articolo);
@@ -140,27 +110,27 @@ public class ArticoloController {
         return articoloResponse;
     }
 
-    @PutMapping("/rest/put")
+    @CrossOrigin(origins = CORS_ORIGIN)
+    @PutMapping("/rest/putExisting")
     public ArticoloResponse putExisting(HttpServletResponse httpServletResponse, @RequestBody Articolo articolo) {
-        this.addHeaders(httpServletResponse);
         ArticoloResponse articoloResponse = articoloDao.putExisting(articolo);
         if (articoloResponse.getError() == null)
             ArticoloController.save();
         return articoloResponse;
     }
 
-    @PutMapping("/rest/put/upd-ins")
+    @CrossOrigin(origins = CORS_ORIGIN)
+    @PutMapping("/rest/putExistingOrNew")
     public ArticoloResponse putExistingOrNew(HttpServletResponse httpServletResponse, @RequestBody Articolo articolo) {
-        this.addHeaders(httpServletResponse);
         ArticoloResponse articoloResponse = articoloDao.putExistingOrNew(articolo);
         if (articoloResponse.getError() == null)
             ArticoloController.save();
         return articoloResponse;
     }
 
-    @DeleteMapping("/rest/del/{id}")
+    @CrossOrigin(origins = CORS_ORIGIN)
+    @DeleteMapping("/rest/delete/{id}")
     public ArticoloResponse delete(HttpServletResponse httpServletResponse, @PathVariable Long id) {
-        this.addHeaders(httpServletResponse);
         ArticoloResponse articoloResponse = articoloDao.delete(id);
         if (articoloResponse.getError() == null)
             ArticoloController.save();
