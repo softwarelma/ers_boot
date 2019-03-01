@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -86,7 +87,7 @@ public class ArticoloController {
     private void addHeaders(HttpServletResponse httpServletResponse) {
         // httpServletResponse.addHeader("Access-Control-Allow-Methods", "GET, POST,
         // DELETE, PUT");
-        httpServletResponse.addHeader("Access-Control-Allow-Methods", "GET");
+        httpServletResponse.addHeader("Access-Control-Allow-Methods", "*");
 
         // httpServletResponse.addHeader("Access-Control-Allow-Origin",
         // "http://localhost:4200 always");
@@ -94,6 +95,7 @@ public class ArticoloController {
 
         // httpServletResponse.addHeader("Access-Control-Request-Headers",
         // "Origin, X-Requested-With, Content-Type, Accept");
+        httpServletResponse.addHeader("Access-Control-Request-Headers", "*");
     }
 
     @GetMapping("/rest/getAll")
@@ -109,7 +111,7 @@ public class ArticoloController {
     }
 
     @GetMapping("/rest/getNew")
-    public ArticoloResponse getArt(HttpServletResponse httpServletResponse, @RequestParam String titolo,
+    public ArticoloResponse getNew(HttpServletResponse httpServletResponse, @RequestParam String titolo,
             @RequestParam String immagine, @RequestParam String nomeImmagine, @RequestParam String testo,
             @RequestParam String sottotitoli) {
         this.addHeaders(httpServletResponse);
@@ -127,9 +129,11 @@ public class ArticoloController {
         return articoloResponse;
     }
 
+    // TODO see https://spring.io/guides/gs/rest-service-cors/
+    @CrossOrigin(origins = "http://localhost:4200")
     @PostMapping(path = "/rest/post", consumes = "application/json", produces = "application/json")
     public ArticoloResponse postNew(HttpServletResponse httpServletResponse, @RequestBody Articolo articolo) {
-        this.addHeaders(httpServletResponse);
+        // this.addHeaders(httpServletResponse);
         ArticoloResponse articoloResponse = articoloDao.addNew(articolo);
         if (articoloResponse.getError() == null)
             ArticoloController.save();
