@@ -4,7 +4,7 @@
 
 	<!-- PROPERTIES -->
 	<properties>
-		<com.softwarelma.ers_boot.version>1.0.1</com.softwarelma.ers_boot.version>
+		<com.softwarelma.ers_boot.version>0.0.3</com.softwarelma.ers_boot.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<jdk.version>1.8</jdk.version>
 		<java.version>${jdk.version}</java.version>
